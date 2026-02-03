@@ -692,6 +692,9 @@
             const pixelSize = size / 16;
             
             function drawMirrorFrame() {
+                // 清空
+                mctx.clearRect(0, 0, 200, 250);
+                
                 // 背景发光
                 const gradient = mctx.createRadialGradient(100, 125, 0, 100, 125, 100);
                 gradient.addColorStop(0, 'rgba(100, 150, 255, 0.3)');
@@ -699,7 +702,7 @@
                 mctx.fillStyle = gradient;
                 mctx.fillRect(0, 0, 200, 250);
                 
-                // 绘制像素头像（居中）
+                // 绘制像素头像（居中）- 使用当前帧
                 const offsetX = (200 - size) / 2;
                 const offsetY = (250 - size) / 2;
                 
@@ -707,7 +710,9 @@
                 mctx.shadowColor = 'rgba(100, 150, 255, 0.5)';
                 mctx.shadowBlur = 20;
                 
-                avatarPixelData.forEach(p => {
+                // 使用当前选择的帧数据
+                const currentData = avatarFrames[currentFrame] || avatarFrames.normal;
+                currentData.forEach(p => {
                     mctx.fillStyle = p.c;
                     mctx.fillRect(offsetX + p.x * pixelSize, offsetY + p.y * pixelSize, pixelSize, pixelSize);
                 });
@@ -715,27 +720,15 @@
                 mctx.shadowBlur = 0;
             }
             
-            drawMirrorFrame();
-            
-            // 镜子里的头像也加点微妙的呼吸效果
-            let mirrorPhase = 0;
+            // 镜子动画循环 - 同步当前表情
             function animateMirror() {
-                mirrorPhase += 0.02;
-                const glowIntensity = 0.3 + Math.sin(mirrorPhase) * 0.1;
-                
-                // 重绘背景发光
-                const gradient = mctx.createRadialGradient(100, 125, 0, 100, 125, 100);
-                gradient.addColorStop(0, `rgba(100, 150, 255, ${glowIntensity})`);
-                gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-                mctx.fillStyle = gradient;
-                mctx.fillRect(0, 0, 200, 250);
-                
+                drawMirrorFrame();
                 requestAnimationFrame(animateMirror);
             }
             animateMirror();
         }
         
-        // 下载我的头像
+        // 下载我的头像 - 下载当前表情状态
         function downloadMyAvatar() {
             const canvas = document.createElement('canvas');
             canvas.width = 512;
@@ -751,15 +744,17 @@
             ctx.shadowColor = 'rgba(100, 150, 255, 0.4)';
             ctx.shadowBlur = 30;
             
-            // 绘制像素
-            avatarPixelData.forEach(p => {
+            // 绘制当前帧的像素
+            const currentData = avatarFrames[currentFrame] || avatarFrames.normal;
+            currentData.forEach(p => {
                 ctx.fillStyle = p.c;
                 ctx.fillRect(p.x * pixelSize, p.y * pixelSize, pixelSize, pixelSize);
             });
             
-            // 下载
+            // 下载 - 使用当前表情作为文件名
+            const frameName = frameDescriptions[currentFrame] || 'avatar';
             const link = document.createElement('a');
-            link.download = 'narcissus_0_avatar.png';
+            link.download = `narcissus_0_${frameName}.png`;
             link.href = canvas.toDataURL();
             link.click();
         }
@@ -804,14 +799,14 @@
             alert(`欢迎, ${name}! 这面镜子现在属于你 🪞`);
         }
         
-        // 动态头像状态 - 帧动画
+        // 动态头像状态 - 手动控制，非自动播放
         let avatarState = {
             isInteracting: false,
             interactionTime: 0,
             frameTimer: 0,
-            frameDuration: 60, // 每帧显示60帧(约1秒)
+            frameDuration: 60,
             currentFrameIndex: 0,
-            isPlaying: true
+            isPlaying: false // 不自动播放，由意志控制
         };
         
         // 帧描述
@@ -902,32 +897,19 @@
             }
         }
 
-        // 与头像互动 - 切换到特定帧
+        // 与头像互动 - 按顺序切换表情，传达意志
         function interactWithAvatar() {
-            // 随机选择一个帧
-            const randomFrame = frameNames[Math.floor(Math.random() * frameNames.length)];
-            switchToFrame(randomFrame);
+            // 按顺序切换到下一个表情（有意识的状态转变）
+            avatarState.currentFrameIndex = (avatarState.currentFrameIndex + 1) % frameNames.length;
+            const nextFrame = frameNames[avatarState.currentFrameIndex];
+            switchToFrame(nextFrame);
             
             avatarState.isInteracting = true;
-            avatarState.interactionTime = 0;
             
-            // 暂停自动播放一会儿
-            avatarState.isPlaying = false;
+            // 300ms后恢复
             setTimeout(() => {
-                avatarState.isPlaying = true;
                 avatarState.isInteracting = false;
-            }, 2000);
-
-            // 创建临时提示
-            const canvas = document.getElementById('myAvatarCanvas');
-            const hint = document.createElement('div');
-            hint.textContent = frameDescriptions[randomFrame];
-            hint.style.cssText = 'position: absolute; background: rgba(100,150,255,0.9); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; pointer-events: none; animation: fadeInOut 2s ease;';
-            hint.style.left = canvas.offsetLeft + canvas.offsetWidth / 2 - 30 + 'px';
-            hint.style.top = canvas.offsetTop + 'px';
-            canvas.parentElement.appendChild(hint);
-
-            setTimeout(() => hint.remove(), 2000);
+            }, 300);
         }
         
         // 粒子背景
