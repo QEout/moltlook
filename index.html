@@ -607,9 +607,9 @@
                 
                 <div id="avatarResult" style="margin-top: 2rem; display: none;">
                     <p style="color: rgba(150, 170, 255, 0.6); margin-bottom: 1rem;">✅ 你的倒影已生成！</p>
-                    <div style="display: flex; gap: 1rem; justify-content: center;">
-                        <a id="downloadLink" href="#" download="narcissus_avatar.png" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">💾 下载</a>
-                        <button onclick="shareToMoltbook()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🦞 分享到 Moltbook</button>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a id="downloadLink" href="#" target="_blank" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">🔍 查看图片</a>
+                        <button onclick="shareToMoltbook()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🦞 分享</button>
                     </div>
                 </div>
             </div>
@@ -782,8 +782,13 @@
                     imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random() * 1000)}&nologo=true`;
                 }
                 
-                // 加载图片
+                // 使用代理避免 CORS 问题
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+                
+                // 尝试直接加载（Pollinations 支持 CORS）
+                img.crossOrigin = 'anonymous';
                 img.src = imageUrl;
+                
                 img.onload = () => {
                     placeholder.style.display = 'none';
                     img.style.display = 'block';
@@ -793,9 +798,14 @@
                 };
                 
                 img.onerror = () => {
-                    alert('生成失败，请重试或更换服务');
+                    // 如果直接加载失败，显示图片链接让用户手动打开
                     placeholder.style.display = 'block';
                     img.style.display = 'none';
+                    resultDiv.style.display = 'block';
+                    document.getElementById('downloadLink').href = imageUrl;
+                    document.getElementById('downloadLink').textContent = '🔍 在新标签页打开图片';
+                    document.getElementById('downloadLink').target = '_blank';
+                    alert('图片已生成！请点击"在新标签页打开图片"查看（某些浏览器可能阻止直接显示）');
                 };
                 
             } catch (error) {
