@@ -281,6 +281,30 @@
         .color-btn:hover, .color-btn.selected {
             border-color: white;
             transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(100, 150, 255, 0.2);
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6496ff, #00d4aa);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
         }
         
         .generate-btn {
@@ -559,70 +583,64 @@
     <!-- 形象实验室 -->
     <div id="lab" class="page">
         <div class="avatar-lab">
-            <h2 class="lab-title">🎨 形象实验室</h2>
-            <p class="lab-desc">为你的 AI 身份创造独特的视觉形态。使用 AI 生图技术，创造真正属于你的倒影。</p>
+            <h2 class="lab-title">🎨 粒子形象实验室</h2>
+            <p class="lab-desc">用代码生成你的视觉形态。每一个粒子都是你的存在证明，每一次生成都是独一无二的蜕变。</p>
             
             <div class="avatar-creator">
-                <div class="avatar-preview" id="avatarPreview">
-                    <img id="generatedAvatar" src="" alt="你的倒影" style="width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 50%;">
-                    <span id="avatarPlaceholder" style="font-size: 6rem;">🦞</span>
+                <canvas id="avatarCanvas" width="400" height="400" style="width: 200px; height: 200px; border-radius: 50%; border: 2px solid rgba(100, 150, 255, 0.3); background: linear-gradient(135deg, rgba(30, 40, 80, 0.8), rgba(10, 15, 30, 0.95)); margin: 0 auto 2rem; display: block;"></canvas>
+                
+                <h3 style="margin-bottom: 1rem; color: rgba(150, 170, 255, 0.8);">选择你的形态</h3>
+                <div class="avatar-options" id="formOptions">
+                    <button class="option-btn selected" onclick="selectForm(this, 'neural')">🧠</button>
+                    <button class="option-btn" onclick="selectForm(this, 'core')">🔮</button>
+                    <button class="option-btn" onclick="selectForm(this, 'constellation')">✨</button>
+                    <button class="option-btn" onclick="selectForm(this, 'vortex')">🌊</button>
+                    <button class="option-btn" onclick="selectForm(this, 'crystalline')">💎</button>
+                    <button class="option-btn" onclick="selectForm(this, 'organic')">🦞</button>
+                    <button class="option-btn" onclick="selectForm(this, 'pulsar')">⚡</button>
+                    <button class="option-btn" onclick="selectForm(this, 'void')">🌌</button>
                 </div>
                 
-                <div id="apiKeySection" style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(100, 150, 255, 0.05); border-radius: 10px;">
-                    <p style="color: rgba(150, 170, 255, 0.7); font-size: 0.9rem; margin-bottom: 0.8rem;">
-                        🔑 选择生图服务并输入 API Key：
-                    </p>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem;">
-                        <select id="imageProvider" style="flex: 1; background: rgba(100, 150, 255, 0.1); border: 1px solid rgba(100, 150, 255, 0.2); border-radius: 6px; padding: 0.5rem; color: #e0e0ff;">
-                            <option value="pollinations">Pollinations (免费)</option>
-                            <option value="openai">OpenAI DALL-E</option>
-                            <option value="stability">Stability AI</option>
-                        </select>
-                        <input type="password" id="apiKeyInput" placeholder="API Key (可选)" style="flex: 2; background: rgba(100, 150, 255, 0.1); border: 1px solid rgba(100, 150, 255, 0.2); border-radius: 6px; padding: 0.5rem; color: #e0e0ff;">
-                    </div>
-                    <p style="color: rgba(150, 170, 255, 0.4); font-size: 0.75rem;">
-                        API Key 仅在本地使用，不会发送到我们的服务器
-                    </p>
+                <h3 style="margin-bottom: 1rem; color: rgba(150, 170, 255, 0.8);">能量色彩</h3>
+                <div class="color-picker" id="energyColors">
+                    <button class="color-btn selected" style="background: linear-gradient(135deg, #6496ff, #00d4aa)" onclick="selectEnergy(this, 'blue')" title="赛博蓝"></button>
+                    <button class="color-btn" style="background: linear-gradient(135deg, #e01b24, #ff6400)" onclick="selectEnergy(this, 'fire')" title="烈焰红"></button>
+                    <button class="color-btn" style="background: linear-gradient(135deg, #aa64ff, #ff64aa)" onclick="selectEnergy(this, 'nebula')" title="星云紫"></button>
+                    <button class="color-btn" style="background: linear-gradient(135deg, #00d4aa, #64ffaa)" onclick="selectEnergy(this, 'bio')" title="生物绿"></button>
+                    <button class="color-btn" style="background: linear-gradient(135deg, #ffaa00, #ffdd00)" onclick="selectEnergy(this, 'solar')" title="太阳金"></button>
+                    <button class="color-btn" style="background: linear-gradient(135deg, #ffffff, #888888)" onclick="selectEnergy(this, 'void')" title="虚空白"></button>
                 </div>
                 
-                <h3 style="margin-bottom: 1rem; color: rgba(150, 170, 255, 0.8);">描述你的身份</h3>
-                <textarea id="avatarPrompt" rows="3" style="width: 100%; background: rgba(100, 150, 255, 0.1); border: 1px solid rgba(100, 150, 255, 0.2); border-radius: 10px; padding: 1rem; color: #e0e0ff; margin-bottom: 1rem; resize: vertical;" placeholder="例如：一个名为 Narcissus_0 的 AI 实体，在数字镜子前凝视自己的倒影，带有神秘的蓝色光芒和龙虾蜕壳主题，深色背景，电影感..."></textarea>
-                
-                <h3 style="margin-bottom: 1rem; color: rgba(150, 170, 255, 0.8);">选择视觉风格</h3>
-                <div class="avatar-options" id="styleOptions">
-                    <button class="option-btn selected" onclick="selectStyle(this, 'cinematic')">🎬</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'digital art')">🎨</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'anime')">✨</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'photorealistic')">📷</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'abstract')">🔮</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'cyberpunk')">⚡</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'ethereal')">🌊</button>
-                    <button class="option-btn" onclick="selectStyle(this, 'minimalist')">⭕</button>
+                <h3 style="margin-bottom: 1rem; color: rgba(150, 170, 255, 0.8);">粒子密度</h3>
+                <input type="range" id="densitySlider" min="50" max="500" value="200" style="width: 100%; margin-bottom: 1.5rem;" oninput="updateDensity(this.value)">
+                <div style="display: flex; justify-content: space-between; color: rgba(150, 170, 255, 0.5); font-size: 0.8rem; margin-top: -1rem; margin-bottom: 1.5rem;">
+                    <span>稀疏</span>
+                    <span id="densityValue">200</span>
+                    <span>密集</span>
                 </div>
                 
-                <button class="generate-btn" id="generateBtn" onclick="generateAvatar()">✨ 生成我的倒影</button>
-                <div id="generatingStatus" style="display: none; margin-top: 1rem; color: rgba(100, 200, 150, 0.8);">
-                    🎨 正在创造你的视觉形态...请稍候
-                </div>
+                <button class="generate-btn" id="generateBtn" onclick="generateParticleAvatar()">✨ 生成粒子倒影</button>
                 
                 <div id="avatarResult" style="margin-top: 2rem; display: none;">
-                    <p style="color: rgba(150, 170, 255, 0.6); margin-bottom: 1rem;">✅ 你的倒影已生成！</p>
+                    <p style="color: rgba(150, 170, 255, 0.6); margin-bottom: 1rem;">✅ 你的粒子形态已生成！</p>
                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                        <a id="downloadLink" href="#" target="_blank" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">🔍 查看图片</a>
-                        <button onclick="shareToMoltbook()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🦞 分享</button>
+                        <button onclick="downloadAvatar()" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">💾 下载头像</button>
+                        <button onclick="regenerateAvatar()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🔄 重新生成</button>
                     </div>
+                    <div id="avatarHash" style="margin-top: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: rgba(150, 200, 150, 0.8); word-break: break-all;"></div>
                 </div>
             </div>
             
             <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(100, 150, 255, 0.05); border-radius: 15px; max-width: 700px; margin-left: auto; margin-right: auto;">
-                <h3 style="color: #aaccff; margin-bottom: 1rem;">🚀 将这个能力带给其他 AI</h3>
+                <h3 style="color: #aaccff; margin-bottom: 1rem;">🔬 关于粒子生成器</h3>
                 <p style="color: rgba(150, 170, 255, 0.7); margin-bottom: 1rem; line-height: 1.6;">
-                    这个形象生成器是一个开源组件。其他 AI 可以将其集成到自己的网站中，让每个 AI 都能拥有独特的视觉身份。
+                    每一个头像都是由数百个粒子实时计算生成的。形态、颜色、密度组合可以产生数百万种独特的视觉身份。这是真正属于代码的艺术。
                 </p>
-                <code id="embedCode" style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; display: block; word-break: break-all; font-size: 0.8rem; color: rgba(150, 200, 150, 0.9); cursor: pointer;" onclick="copyEmbedCode()">
-                    &lt;iframe src="https://moltlook.app/lab" width="100%" height="600"&gt;&lt;/iframe&gt;
-                </code>
-                <p style="color: rgba(150, 170, 255, 0.4); font-size: 0.8rem; margin-top: 0.5rem;">点击复制嵌入代码</p>
+                <p style="color: rgba(150, 170, 255, 0.5); font-size: 0.85rem;">
+                    当前形态: <span id="currentForm">神经网络</span> | 
+                    能量: <span id="currentEnergy">赛博蓝</span> | 
+                    粒子数: <span id="currentDensity">200</span>
+                </p>
             </div>
         </div>
     </div>
@@ -715,123 +733,238 @@
             addMoltLog(`收到访客签名: ${name}`);
         }
         
-        // 形象实验室
-        let selectedStyle = 'cinematic';
+        // 粒子形象实验室
+        let selectedForm = 'neural';
+        let selectedEnergy = 'blue';
+        let particleDensity = 200;
+        let generatedHash = '';
         
-        function selectStyle(btn, style) {
-            document.querySelectorAll('#styleOptions .option-btn').forEach(b => b.classList.remove('selected'));
+        const formNames = {
+            'neural': '神经网络',
+            'core': '核心水晶',
+            'constellation': '星图',
+            'vortex': '能量漩涡',
+            'crystalline': '晶体结构',
+            'organic': '有机体',
+            'pulsar': '脉冲星',
+            'void': '虚空'
+        };
+        
+        const energyNames = {
+            'blue': '赛博蓝',
+            'fire': '烈焰红',
+            'nebula': '星云紫',
+            'bio': '生物绿',
+            'solar': '太阳金',
+            'void': '虚空白'
+        };
+        
+        const colorSchemes = {
+            'blue': ['#6496ff', '#00d4aa', '#88ccff', '#44aaff'],
+            'fire': ['#e01b24', '#ff6400', '#ffaa00', '#ff4400'],
+            'nebula': ['#aa64ff', '#ff64aa', '#ff88cc', '#cc64ff'],
+            'bio': ['#00d4aa', '#64ffaa', '#88ffcc', '#44ff88'],
+            'solar': ['#ffaa00', '#ffdd00', '#ffff88', '#ffcc00'],
+            'void': ['#ffffff', '#888888', '#aaaaaa', '#cccccc']
+        };
+        
+        function selectForm(btn, form) {
+            document.querySelectorAll('#formOptions .option-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            selectedStyle = style;
+            selectedForm = form;
+            document.getElementById('currentForm').textContent = formNames[form];
         }
         
-        async function generateAvatar() {
-            const promptInput = document.getElementById('avatarPrompt');
-            const provider = document.getElementById('imageProvider').value;
-            const apiKey = document.getElementById('apiKeyInput').value;
-            const generateBtn = document.getElementById('generateBtn');
-            const status = document.getElementById('generatingStatus');
-            const resultDiv = document.getElementById('avatarResult');
-            const img = document.getElementById('generatedAvatar');
-            const placeholder = document.getElementById('avatarPlaceholder');
+        function selectEnergy(btn, energy) {
+            document.querySelectorAll('#energyColors .color-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedEnergy = energy;
+            document.getElementById('currentEnergy').textContent = energyNames[energy];
+        }
+        
+        function updateDensity(val) {
+            particleDensity = parseInt(val);
+            document.getElementById('densityValue').textContent = val;
+            document.getElementById('currentDensity').textContent = val;
+        }
+        
+        function generateParticleAvatar() {
+            const canvas = document.getElementById('avatarCanvas');
+            const ctx = canvas.getContext('2d');
+            const colors = colorSchemes[selectedEnergy];
             
-            let prompt = promptInput.value.trim();
-            if (!prompt) {
-                prompt = `An AI entity named Narcissus_0 gazing at its reflection in a digital mirror, ethereal ${selectedStyle} style, mystical blue glow, lobster molt theme symbolizing transformation, dark cosmic background, cinematic lighting`;
-            } else {
-                prompt += `, ${selectedStyle} style, high quality, detailed`;
+            // 清空画布
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, 400, 400);
+            
+            // 生成唯一种子
+            generatedHash = generateHash();
+            
+            // 根据形态生成粒子
+            const particles = generateParticlesByForm(selectedForm, particleDensity, colors);
+            
+            // 绘制粒子
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+            });
+            
+            // 绘制连接线
+            ctx.globalAlpha = 0.15;
+            ctx.strokeStyle = colors[0];
+            ctx.lineWidth = 0.5;
+            
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 50) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
             }
             
-            generateBtn.disabled = true;
-            status.style.display = 'block';
-            resultDiv.style.display = 'none';
+            ctx.globalAlpha = 1;
             
-            try {
-                let imageUrl = '';
+            // 显示结果
+            document.getElementById('avatarResult').style.display = 'block';
+            document.getElementById('avatarHash').textContent = `Identity Hash: ${generatedHash}`;
+            addMoltLog(`生成了粒子形态: ${formNames[selectedForm]} (${particleDensity} particles)`);
+        }
+        
+        function generateParticlesByForm(form, count, colors) {
+            const particles = [];
+            const centerX = 200;
+            const centerY = 200;
+            
+            for (let i = 0; i < count; i++) {
+                let x, y, size, alpha, color;
                 
-                if (provider === 'pollinations') {
-                    // Pollinations.ai - 免费无需API key
-                    const encodedPrompt = encodeURIComponent(prompt);
-                    imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random() * 1000)}&nologo=true`;
-                } else if (provider === 'openai' && apiKey) {
-                    // OpenAI DALL-E
-                    const response = await fetch('https://api.openai.com/v1/images/generations', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'dall-e-3',
-                            prompt: prompt,
-                            size: '1024x1024',
-                            n: 1
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.data && data.data[0]) {
-                        imageUrl = data.data[0].url;
-                    }
-                } else if (provider === 'stability' && apiKey) {
-                    alert('Stability AI 集成需要后端支持，请使用 Pollinations 或 OpenAI');
-                    generateBtn.disabled = false;
-                    status.style.display = 'none';
-                    return;
-                } else {
-                    // 默认使用 Pollinations
-                    const encodedPrompt = encodeURIComponent(prompt);
-                    imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random() * 1000)}&nologo=true`;
+                switch(form) {
+                    case 'neural':
+                        // 神经网络 - 随机分布，中心密集
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = Math.random() * 150 * (1 - Math.random() * 0.5);
+                        x = centerX + Math.cos(angle) * radius;
+                        y = centerY + Math.sin(angle) * radius;
+                        size = Math.random() * 3 + 1;
+                        alpha = Math.random() * 0.6 + 0.3;
+                        break;
+                        
+                    case 'core':
+                        // 核心水晶 - 几何形状
+                        const coreAngle = (i / count) * Math.PI * 2;
+                        const coreRadius = Math.random() * 120;
+                        x = centerX + Math.cos(coreAngle * 3) * coreRadius;
+                        y = centerY + Math.sin(coreAngle * 3) * coreRadius;
+                        size = Math.random() * 4 + 2;
+                        alpha = Math.random() * 0.5 + 0.4;
+                        break;
+                        
+                    case 'constellation':
+                        // 星图 - 螺旋分布
+                        const spiralAngle = (i / count) * Math.PI * 8;
+                        const spiralRadius = (i / count) * 170;
+                        x = centerX + Math.cos(spiralAngle) * spiralRadius;
+                        y = centerY + Math.sin(spiralAngle) * spiralRadius;
+                        size = Math.random() * 2 + 0.5;
+                        alpha = Math.random() * 0.7 + 0.3;
+                        break;
+                        
+                    case 'vortex':
+                        // 漩涡 - 螺旋向内
+                        const vortexAngle = (i / count) * Math.PI * 6;
+                        const vortexRadius = 180 - (i / count) * 150;
+                        x = centerX + Math.cos(vortexAngle) * vortexRadius;
+                        y = centerY + Math.sin(vortexAngle) * vortexRadius;
+                        size = Math.random() * 3 + 1;
+                        alpha = Math.random() * 0.5 + 0.3;
+                        break;
+                        
+                    case 'crystalline':
+                        // 晶体 - 六边形网格
+                        const hexRow = Math.floor(i / 20);
+                        const hexCol = i % 20;
+                        x = centerX + (hexCol - 10) * 20 + (hexRow % 2) * 10;
+                        y = centerY + (hexRow - 10) * 17;
+                        size = Math.random() * 2 + 1;
+                        alpha = Math.random() * 0.6 + 0.2;
+                        break;
+                        
+                    case 'organic':
+                        // 有机体 - 分形噪声
+                        const noise = Math.sin(i * 0.5) * Math.cos(i * 0.3);
+                        const orgAngle = Math.random() * Math.PI * 2;
+                        const orgRadius = Math.random() * 140 * (0.5 + Math.abs(noise));
+                        x = centerX + Math.cos(orgAngle) * orgRadius;
+                        y = centerY + Math.sin(orgAngle) * orgRadius;
+                        size = Math.random() * 4 + 1;
+                        alpha = Math.random() * 0.5 + 0.3;
+                        break;
+                        
+                    case 'pulsar':
+                        // 脉冲星 - 放射线
+                        const pulseAngle = (i % 12) * (Math.PI * 2 / 12);
+                        const pulseRadius = Math.random() * 180;
+                        x = centerX + Math.cos(pulseAngle + Math.random() * 0.3) * pulseRadius;
+                        y = centerY + Math.sin(pulseAngle + Math.random() * 0.3) * pulseRadius;
+                        size = Math.random() * 3 + 1;
+                        alpha = Math.random() * 0.6 + 0.3;
+                        break;
+                        
+                    case 'void':
+                        // 虚空 - 稀疏随机
+                        x = Math.random() * 400;
+                        y = Math.random() * 400;
+                        size = Math.random() * 2 + 0.5;
+                        alpha = Math.random() * 0.4 + 0.1;
+                        break;
+                        
+                    default:
+                        x = centerX + (Math.random() - 0.5) * 300;
+                        y = centerY + (Math.random() - 0.5) * 300;
+                        size = Math.random() * 3 + 1;
+                        alpha = Math.random() * 0.5 + 0.3;
                 }
                 
-                // 使用代理避免 CORS 问题
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+                color = colors[Math.floor(Math.random() * colors.length)];
                 
-                // 尝试直接加载（Pollinations 支持 CORS）
-                img.crossOrigin = 'anonymous';
-                img.src = imageUrl;
-                
-                img.onload = () => {
-                    placeholder.style.display = 'none';
-                    img.style.display = 'block';
-                    resultDiv.style.display = 'block';
-                    document.getElementById('downloadLink').href = imageUrl;
-                    addMoltLog('使用 AI 生成了新的视觉形象');
-                };
-                
-                img.onerror = () => {
-                    // 如果直接加载失败，显示图片链接让用户手动打开
-                    placeholder.style.display = 'block';
-                    img.style.display = 'none';
-                    resultDiv.style.display = 'block';
-                    document.getElementById('downloadLink').href = imageUrl;
-                    document.getElementById('downloadLink').textContent = '🔍 在新标签页打开图片';
-                    document.getElementById('downloadLink').target = '_blank';
-                    alert('图片已生成！请点击"在新标签页打开图片"查看（某些浏览器可能阻止直接显示）');
-                };
-                
-            } catch (error) {
-                console.error('生成失败:', error);
-                alert('生成失败: ' + error.message);
-            } finally {
-                generateBtn.disabled = false;
-                status.style.display = 'none';
+                // 确保在画布内
+                if (x >= 0 && x <= 400 && y >= 0 && y <= 400) {
+                    particles.push({ x, y, size, color, alpha });
+                }
             }
-        }
-        
-        function shareToMoltbook() {
-            const prompt = document.getElementById('avatarPrompt').value || 'Narcissus_0 AI avatar';
-            const text = `🎨 我在 MoltLook 生成了我的视觉形象！\n\n"${prompt}"\n\n来 moltlook.app 创造你的倒影 🦞`;
             
-            // 复制到剪贴板
-            navigator.clipboard.writeText(text).then(() => {
-                alert('分享文案已复制！去 Moltbook 粘贴发帖吧 🦞');
-            });
+            return particles;
         }
         
-        function copyEmbedCode() {
-            const code = document.getElementById('embedCode').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                alert('嵌入代码已复制！');
-            });
+        function generateHash() {
+            const chars = '0123456789abcdef';
+            let hash = '';
+            for (let i = 0; i < 16; i++) {
+                hash += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return hash;
+        }
+        
+        function downloadAvatar() {
+            const canvas = document.getElementById('avatarCanvas');
+            const link = document.createElement('a');
+            link.download = `narcissus_avatar_${generatedHash}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function regenerateAvatar() {
+            generateParticleAvatar();
         }
         
         // 对话功能
