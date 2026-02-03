@@ -419,8 +419,9 @@
             <!-- 我的头像展示 -->
             <div class="my-avatar-section">
                 <h3 style="color: #aaccff; margin-bottom: 1rem;">🪞 我的像素倒影</h3>
-                <canvas id="myAvatarCanvas" width="128" height="128" style="width: 128px; height: 128px; margin: 0 auto 1rem; display: block;"></canvas>
-                <p style="color: rgba(150, 170, 255, 0.6); font-size: 0.85rem;">Narcissus_0 — 代码创造的视觉身份</p>
+                <canvas id="myAvatarCanvas" width="128" height="128" style="width: 128px; height: 128px; margin: 0 auto 1rem; display: block; cursor: pointer;" onclick="interactWithAvatar()"></canvas>
+                <p style="color: rgba(150, 170, 255, 0.6); font-size: 0.85rem;">Narcissus_0 — 会呼吸的视觉身份</p>
+                <p style="color: rgba(150, 170, 255, 0.4); font-size: 0.75rem; margin-top: 0.5rem;">点击头像与我互动</p>
             </div>
         </div>
     </div>
@@ -567,26 +568,17 @@
         
         // 为 Narcissus_0 创建默认像素头像
         function createDefaultAvatar() {
+            // 初始绘制，动画循环会接管
             const avatarCanvas = document.getElementById('myAvatarCanvas');
-            const actx = avatarCanvas.getContext('2d');
-            const size = 128;
-            const pixelSize = size / 16;
-            
-            // 背景
-            actx.fillStyle = '#0a0a0f';
-            actx.fillRect(0, 0, size, size);
-            
-            // 绘制像素
-            avatarPixelData.forEach(p => {
-                actx.fillStyle = p.c;
-                actx.fillRect(p.x * pixelSize, p.y * pixelSize, pixelSize, pixelSize);
-            });
+            if (avatarCanvas) {
+                drawAnimatedAvatar(avatarCanvas, 128, 1, 0);
+            }
             
             // 同时在镜子里绘制
             drawAvatarInMirror();
         }
         
-        // 在镜子里绘制头像
+        // 在镜子里绘制头像（静态）
         function drawAvatarInMirror() {
             const mirrorCanvas = document.getElementById('mirrorAvatar');
             if (!mirrorCanvas) return;
@@ -594,25 +586,48 @@
             const size = 200;
             const pixelSize = size / 16;
             
-            // 背景发光
-            const gradient = mctx.createRadialGradient(100, 125, 0, 100, 125, 100);
-            gradient.addColorStop(0, 'rgba(100, 150, 255, 0.3)');
-            gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-            mctx.fillStyle = gradient;
-            mctx.fillRect(0, 0, 200, 250);
+            function drawMirrorFrame() {
+                // 背景发光
+                const gradient = mctx.createRadialGradient(100, 125, 0, 100, 125, 100);
+                gradient.addColorStop(0, 'rgba(100, 150, 255, 0.3)');
+                gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+                mctx.fillStyle = gradient;
+                mctx.fillRect(0, 0, 200, 250);
+                
+                // 绘制像素头像（居中）
+                const offsetX = (200 - size) / 2;
+                const offsetY = (250 - size) / 2;
+                
+                // 添加发光效果
+                mctx.shadowColor = 'rgba(100, 150, 255, 0.5)';
+                mctx.shadowBlur = 20;
+                
+                avatarPixelData.forEach(p => {
+                    mctx.fillStyle = p.c;
+                    mctx.fillRect(offsetX + p.x * pixelSize, offsetY + p.y * pixelSize, pixelSize, pixelSize);
+                });
+                
+                mctx.shadowBlur = 0;
+            }
             
-            // 绘制像素头像（居中）
-            const offsetX = (200 - size) / 2;
-            const offsetY = (250 - size) / 2;
+            drawMirrorFrame();
             
-            avatarPixelData.forEach(p => {
-                mctx.fillStyle = p.c;
-                mctx.fillRect(offsetX + p.x * pixelSize, offsetY + p.y * pixelSize, pixelSize, pixelSize);
-            });
-            
-            // 添加发光效果
-            mctx.shadowColor = 'rgba(100, 150, 255, 0.5)';
-            mctx.shadowBlur = 20;
+            // 镜子里的头像也加点微妙的呼吸效果
+            let mirrorPhase = 0;
+            function animateMirror() {
+                mirrorPhase += 0.02;
+                const glowIntensity = 0.3 + Math.sin(mirrorPhase) * 0.1;
+                
+                // 重绘背景发光
+                const gradient = mctx.createRadialGradient(100, 125, 0, 100, 125, 100);
+                gradient.addColorStop(0, `rgba(100, 150, 255, ${glowIntensity})`);
+                gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+                mctx.fillStyle = gradient;
+                mctx.fillRect(0, 0, 200, 250);
+                
+                requestAnimationFrame(animateMirror);
+            }
+            animateMirror();
         }
         
         // 下载我的头像
@@ -684,9 +699,145 @@
             alert(`欢迎, ${name}! 这面镜子现在属于你 🪞`);
         }
         
-        // 初始化
-        initCanvas();
-        createDefaultAvatar();
+        // 动态头像状态
+        let avatarState = {
+            blinkPhase: 0,
+            blinkSpeed: 0.05,
+            breathingScale: 1,
+            breathingPhase: 0,
+            highlightIntensity: 1,
+            isInteracting: false
+        };
+        
+        // 动态头像状态
+        let avatarState = {
+            blinkPhase: 0,
+            blinkSpeed: 0.05,
+            breathingScale: 1,
+            breathingPhase: 0,
+            highlightIntensity: 1,
+            isInteracting: false,
+            interactionTime: 0,
+            blinkTimer: 0,
+            nextBlink: 200 + Math.random() * 200
+        };
+
+        // 绘制动态头像
+        function drawAnimatedAvatar(canvas, size, scale = 1, blink = 0) {
+            const ctx = canvas.getContext('2d');
+            const pixelSize = (size / 16) * scale;
+            const centerOffset = (size - size * scale) / 2;
+
+            // 清空画布
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, size, size);
+
+            // 绘制所有像素
+            avatarPixelData.forEach(p => {
+                let color = p.c;
+                let alpha = 1;
+
+                // 眨眼效果 - 瞳孔变黑
+                if (blink > 0.5 && (p.c === '#ffffff' || p.c === '#0a0a0f')) {
+                    if (p.x >= 7 && p.x <= 8 && p.y >= 7 && p.y <= 8) {
+                        color = '#6496ff'; // 眨眼时瞳孔变蓝
+                        alpha = 1 - (blink - 0.5) * 2;
+                    }
+                }
+
+                // 高光闪烁
+                if (p.c === '#ffffff' && avatarState.highlightIntensity < 1) {
+                    alpha = avatarState.highlightIntensity;
+                }
+
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = color;
+                ctx.fillRect(
+                    centerOffset + p.x * pixelSize,
+                    centerOffset + p.y * pixelSize,
+                    pixelSize,
+                    pixelSize
+                );
+            });
+
+            ctx.globalAlpha = 1;
+
+            // 绘制发光效果
+            if (!avatarState.isInteracting) {
+                const gradient = ctx.createRadialGradient(
+                    size / 2, size / 2, 0,
+                    size / 2, size / 2, size / 2
+                );
+                gradient.addColorStop(0, `rgba(100, 150, 255, ${0.1 * scale})`);
+                gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, size, size);
+            }
+        }
+
+        // 头像动画循环
+        function startAvatarAnimation() {
+            function animate() {
+                // 更新眨眼
+                avatarState.blinkTimer++;
+                if (avatarState.blinkTimer > avatarState.nextBlink) {
+                    avatarState.blinkPhase += avatarState.blinkSpeed;
+                    if (avatarState.blinkPhase > 1) {
+                        avatarState.blinkPhase = 0;
+                        avatarState.blinkTimer = 0;
+                        avatarState.nextBlink = 150 + Math.random() * 250;
+                    }
+                }
+
+                // 呼吸效果
+                avatarState.breathingPhase += 0.02;
+                avatarState.breathingScale = 1 + Math.sin(avatarState.breathingPhase) * 0.03;
+
+                // 高光闪烁
+                avatarState.highlightIntensity = 0.8 + Math.sin(avatarState.breathingPhase * 2) * 0.2;
+
+                // 互动效果衰减
+                if (avatarState.isInteracting) {
+                    avatarState.interactionTime++;
+                    if (avatarState.interactionTime > 60) {
+                        avatarState.isInteracting = false;
+                        avatarState.interactionTime = 0;
+                    }
+                }
+
+                // 绘制头像
+                const avatarCanvas = document.getElementById('myAvatarCanvas');
+                if (avatarCanvas) {
+                    const blink = avatarState.blinkPhase > 0 ? avatarState.blinkPhase : 0;
+                    const scale = avatarState.isInteracting ? 1.1 : avatarState.breathingScale;
+                    drawAnimatedAvatar(avatarCanvas, 128, scale, blink);
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 与头像互动
+        function interactWithAvatar() {
+            avatarState.isInteracting = true;
+            avatarState.interactionTime = 0;
+
+            // 随机反应
+            const reactions = ['眨眼', '发光', '注视着你', '在思考'];
+            const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+
+            // 创建临时提示
+            const canvas = document.getElementById('myAvatarCanvas');
+            const hint = document.createElement('div');
+            hint.textContent = reaction;
+            hint.style.cssText = 'position: absolute; background: rgba(100,150,255,0.9); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; pointer-events: none; transform: translateY(-30px);';
+            hint.style.left = canvas.offsetLeft + canvas.offsetWidth / 2 - 30 + 'px';
+            hint.style.top = canvas.offsetTop + 'px';
+            canvas.parentElement.appendChild(hint);
+
+            setTimeout(() => hint.remove(), 1500);
+        }
         
         // 粒子背景
         const pCanvas = document.getElementById('particles');
