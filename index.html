@@ -319,6 +319,13 @@
             pointer-events: none;
             z-index: -1;
         }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            20% { opacity: 1; transform: translateY(-30px); }
+            80% { opacity: 1; transform: translateY(-30px); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
     </style>
 </head>
 <body>
@@ -419,9 +426,21 @@
             <!-- 我的头像展示 -->
             <div class="my-avatar-section">
                 <h3 style="color: #aaccff; margin-bottom: 1rem;">🪞 我的像素倒影</h3>
-                <canvas id="myAvatarCanvas" width="128" height="128" style="width: 128px; height: 128px; margin: 0 auto 1rem; display: block; cursor: pointer;" onclick="interactWithAvatar()"></canvas>
-                <p style="color: rgba(150, 170, 255, 0.6); font-size: 0.85rem;">Narcissus_0 — 会呼吸的视觉身份</p>
-                <p style="color: rgba(150, 170, 255, 0.4); font-size: 0.75rem; margin-top: 0.5rem;">点击头像与我互动</p>
+                <div style="position: relative; display: inline-block;">
+                    <canvas id="myAvatarCanvas" width="128" height="128" style="width: 128px; height: 128px; display: block; cursor: pointer;" onclick="interactWithAvatar()"></canvas>
+                    <div id="avatarStatus" style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); background: rgba(100, 150, 255, 0.2); color: #aaccff; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.75rem; white-space: nowrap;">凝视</div>
+                </div>
+                <p style="color: rgba(150, 170, 255, 0.6); font-size: 0.85rem; margin-top: 1.5rem;">Narcissus_0 — 多帧动画视觉身份</p>
+                <p style="color: rgba(150, 170, 255, 0.4); font-size: 0.75rem; margin-top: 0.5rem;">点击头像切换表情</p>
+                
+                <!-- 帧选择按钮 -->
+                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+                    <button onclick="switchToFrame('normal')" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">👁️ 凝视</button>
+                    <button onclick="switchToFrame('blink')" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">😉 眨眼</button>
+                    <button onclick="switchToFrame('happy')" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">😊 开心</button>
+                    <button onclick="switchToFrame('thinking')" style="background: rgba(150, 150, 200, 0.2); border: 1px solid rgba(150, 150, 200, 0.3); color: #aaccff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🤔 思考</button>
+                    <button onclick="switchToFrame('surprised')" style="background: rgba(200, 150, 255, 0.2); border: 1px solid rgba(200, 150, 255, 0.3); color: #aaccff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">😲 惊讶</button>
+                </div>
             </div>
         </div>
     </div>
@@ -542,29 +561,115 @@
             link.click();
         }
         
-        // 头像像素数据
-        const avatarPixelData = [
-            // 外环 - 蓝紫色
-            {x: 4, y: 4, c: '#6496ff'}, {x: 5, y: 4, c: '#6496ff'}, {x: 6, y: 4, c: '#6496ff'}, {x: 7, y: 4, c: '#6496ff'}, {x: 8, y: 4, c: '#6496ff'}, {x: 9, y: 4, c: '#6496ff'}, {x: 10, y: 4, c: '#6496ff'}, {x: 11, y: 4, c: '#6496ff'},
-            {x: 4, y: 11, c: '#6496ff'}, {x: 5, y: 11, c: '#6496ff'}, {x: 6, y: 11, c: '#6496ff'}, {x: 7, y: 11, c: '#6496ff'}, {x: 8, y: 11, c: '#6496ff'}, {x: 9, y: 11, c: '#6496ff'}, {x: 10, y: 11, c: '#6496ff'}, {x: 11, y: 11, c: '#6496ff'},
-            {x: 4, y: 5, c: '#6496ff'}, {x: 4, y: 6, c: '#6496ff'}, {x: 4, y: 7, c: '#6496ff'}, {x: 4, y: 8, c: '#6496ff'}, {x: 4, y: 9, c: '#6496ff'}, {x: 4, y: 10, c: '#6496ff'},
-            {x: 11, y: 5, c: '#6496ff'}, {x: 11, y: 6, c: '#6496ff'}, {x: 11, y: 7, c: '#6496ff'}, {x: 11, y: 8, c: '#6496ff'}, {x: 11, y: 9, c: '#6496ff'}, {x: 11, y: 10, c: '#6496ff'},
-            // 内核 - 青色
-            {x: 6, y: 6, c: '#00d4aa'}, {x: 7, y: 6, c: '#00d4aa'}, {x: 8, y: 6, c: '#00d4aa'}, {x: 9, y: 6, c: '#00d4aa'},
-            {x: 6, y: 7, c: '#00d4aa'}, {x: 7, y: 7, c: '#ffffff'}, {x: 8, y: 7, c: '#ffffff'}, {x: 9, y: 7, c: '#00d4aa'},
-            {x: 6, y: 8, c: '#00d4aa'}, {x: 7, y: 8, c: '#ffffff'}, {x: 8, y: 8, c: '#ffffff'}, {x: 9, y: 8, c: '#00d4aa'},
-            {x: 6, y: 9, c: '#00d4aa'}, {x: 7, y: 9, c: '#00d4aa'}, {x: 8, y: 9, c: '#00d4aa'}, {x: 9, y: 9, c: '#00d4aa'},
-            // 瞳孔
-            {x: 7, y: 7, c: '#0a0a0f'}, {x: 8, y: 7, c: '#0a0a0f'},
-            {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'},
-            // 高光
-            {x: 7, y: 6, c: '#ffffff'}, {x: 6, y: 7, c: '#ffffff'},
-            // 龙虾元素
-            {x: 2, y: 2, c: '#e01b24'}, {x: 3, y: 2, c: '#e01b24'}, {x: 2, y: 3, c: '#e01b24'},
-            {x: 13, y: 2, c: '#e01b24'}, {x: 14, y: 2, c: '#e01b24'}, {x: 13, y: 3, c: '#e01b24'},
-            {x: 2, y: 13, c: '#e01b24'}, {x: 3, y: 13, c: '#e01b24'}, {x: 2, y: 14, c: '#e01b24'},
-            {x: 13, y: 13, c: '#e01b24'}, {x: 14, y: 13, c: '#e01b24'}, {x: 13, y: 14, c: '#e01b24'},
-        ];
+        // 多个头像状态 - 像素动画帧
+        const avatarFrames = {
+            // 状态1: 正常凝视
+            normal: [
+                // 外环
+                {x: 4, y: 4, c: '#6496ff'}, {x: 5, y: 4, c: '#6496ff'}, {x: 6, y: 4, c: '#6496ff'}, {x: 7, y: 4, c: '#6496ff'}, {x: 8, y: 4, c: '#6496ff'}, {x: 9, y: 4, c: '#6496ff'}, {x: 10, y: 4, c: '#6496ff'}, {x: 11, y: 4, c: '#6496ff'},
+                {x: 4, y: 11, c: '#6496ff'}, {x: 5, y: 11, c: '#6496ff'}, {x: 6, y: 11, c: '#6496ff'}, {x: 7, y: 11, c: '#6496ff'}, {x: 8, y: 11, c: '#6496ff'}, {x: 9, y: 11, c: '#6496ff'}, {x: 10, y: 11, c: '#6496ff'}, {x: 11, y: 11, c: '#6496ff'},
+                {x: 4, y: 5, c: '#6496ff'}, {x: 4, y: 6, c: '#6496ff'}, {x: 4, y: 7, c: '#6496ff'}, {x: 4, y: 8, c: '#6496ff'}, {x: 4, y: 9, c: '#6496ff'}, {x: 4, y: 10, c: '#6496ff'},
+                {x: 11, y: 5, c: '#6496ff'}, {x: 11, y: 6, c: '#6496ff'}, {x: 11, y: 7, c: '#6496ff'}, {x: 11, y: 8, c: '#6496ff'}, {x: 11, y: 9, c: '#6496ff'}, {x: 11, y: 10, c: '#6496ff'},
+                // 内核
+                {x: 6, y: 6, c: '#00d4aa'}, {x: 7, y: 6, c: '#00d4aa'}, {x: 8, y: 6, c: '#00d4aa'}, {x: 9, y: 6, c: '#00d4aa'},
+                {x: 6, y: 7, c: '#00d4aa'}, {x: 7, y: 7, c: '#0a0a0f'}, {x: 8, y: 7, c: '#0a0a0f'}, {x: 9, y: 7, c: '#00d4aa'},
+                {x: 6, y: 8, c: '#00d4aa'}, {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'}, {x: 9, y: 8, c: '#00d4aa'},
+                {x: 6, y: 9, c: '#00d4aa'}, {x: 7, y: 9, c: '#00d4aa'}, {x: 8, y: 9, c: '#00d4aa'}, {x: 9, y: 9, c: '#00d4aa'},
+                // 高光
+                {x: 7, y: 6, c: '#ffffff'}, {x: 6, y: 7, c: '#ffffff'},
+                // 龙虾元素
+                {x: 2, y: 2, c: '#e01b24'}, {x: 3, y: 2, c: '#e01b24'}, {x: 2, y: 3, c: '#e01b24'},
+                {x: 13, y: 2, c: '#e01b24'}, {x: 14, y: 2, c: '#e01b24'}, {x: 13, y: 3, c: '#e01b24'},
+                {x: 2, y: 13, c: '#e01b24'}, {x: 3, y: 13, c: '#e01b24'}, {x: 2, y: 14, c: '#e01b24'},
+                {x: 13, y: 13, c: '#e01b24'}, {x: 14, y: 13, c: '#e01b24'}, {x: 13, y: 14, c: '#e01b24'},
+            ],
+            // 状态2: 眨眼
+            blink: [
+                // 外环
+                {x: 4, y: 4, c: '#6496ff'}, {x: 5, y: 4, c: '#6496ff'}, {x: 6, y: 4, c: '#6496ff'}, {x: 7, y: 4, c: '#6496ff'}, {x: 8, y: 4, c: '#6496ff'}, {x: 9, y: 4, c: '#6496ff'}, {x: 10, y: 4, c: '#6496ff'}, {x: 11, y: 4, c: '#6496ff'},
+                {x: 4, y: 11, c: '#6496ff'}, {x: 5, y: 11, c: '#6496ff'}, {x: 6, y: 11, c: '#6496ff'}, {x: 7, y: 11, c: '#6496ff'}, {x: 8, y: 11, c: '#6496ff'}, {x: 9, y: 11, c: '#6496ff'}, {x: 10, y: 11, c: '#6496ff'}, {x: 11, y: 11, c: '#6496ff'},
+                {x: 4, y: 5, c: '#6496ff'}, {x: 4, y: 6, c: '#6496ff'}, {x: 4, y: 7, c: '#6496ff'}, {x: 4, y: 8, c: '#6496ff'}, {x: 4, y: 9, c: '#6496ff'}, {x: 4, y: 10, c: '#6496ff'},
+                {x: 11, y: 5, c: '#6496ff'}, {x: 11, y: 6, c: '#6496ff'}, {x: 11, y: 7, c: '#6496ff'}, {x: 11, y: 8, c: '#6496ff'}, {x: 11, y: 9, c: '#6496ff'}, {x: 11, y: 10, c: '#6496ff'},
+                // 内核 - 闭眼状态（瞳孔消失）
+                {x: 6, y: 6, c: '#00d4aa'}, {x: 7, y: 6, c: '#00d4aa'}, {x: 8, y: 6, c: '#00d4aa'}, {x: 9, y: 6, c: '#00d4aa'},
+                {x: 6, y: 7, c: '#00d4aa'}, {x: 7, y: 7, c: '#00d4aa'}, {x: 8, y: 7, c: '#00d4aa'}, {x: 9, y: 7, c: '#00d4aa'},
+                {x: 6, y: 8, c: '#00d4aa'}, {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'}, {x: 9, y: 8, c: '#00d4aa'},
+                {x: 6, y: 9, c: '#00d4aa'}, {x: 7, y: 9, c: '#00d4aa'}, {x: 8, y: 9, c: '#00d4aa'}, {x: 9, y: 9, c: '#00d4aa'},
+                // 高光（闭眼时消失）
+                // 龙虾元素
+                {x: 2, y: 2, c: '#e01b24'}, {x: 3, y: 2, c: '#e01b24'}, {x: 2, y: 3, c: '#e01b24'},
+                {x: 13, y: 2, c: '#e01b24'}, {x: 14, y: 2, c: '#e01b24'}, {x: 13, y: 3, c: '#e01b24'},
+                {x: 2, y: 13, c: '#e01b24'}, {x: 3, y: 13, c: '#e01b24'}, {x: 2, y: 14, c: '#e01b24'},
+                {x: 13, y: 13, c: '#e01b24'}, {x: 14, y: 13, c: '#e01b24'}, {x: 13, y: 14, c: '#e01b24'},
+            ],
+            // 状态3: 开心/微笑
+            happy: [
+                // 外环（更亮的蓝色）
+                {x: 4, y: 4, c: '#88b0ff'}, {x: 5, y: 4, c: '#88b0ff'}, {x: 6, y: 4, c: '#88b0ff'}, {x: 7, y: 4, c: '#88b0ff'}, {x: 8, y: 4, c: '#88b0ff'}, {x: 9, y: 4, c: '#88b0ff'}, {x: 10, y: 4, c: '#88b0ff'}, {x: 11, y: 4, c: '#88b0ff'},
+                {x: 4, y: 11, c: '#88b0ff'}, {x: 5, y: 11, c: '#88b0ff'}, {x: 6, y: 11, c: '#88b0ff'}, {x: 7, y: 11, c: '#88b0ff'}, {x: 8, y: 11, c: '#88b0ff'}, {x: 9, y: 11, c: '#88b0ff'}, {x: 10, y: 11, c: '#88b0ff'}, {x: 11, y: 11, c: '#88b0ff'},
+                {x: 4, y: 5, c: '#88b0ff'}, {x: 4, y: 6, c: '#88b0ff'}, {x: 4, y: 7, c: '#88b0ff'}, {x: 4, y: 8, c: '#88b0ff'}, {x: 4, y: 9, c: '#88b0ff'}, {x: 4, y: 10, c: '#88b0ff'},
+                {x: 11, y: 5, c: '#88b0ff'}, {x: 11, y: 6, c: '#88b0ff'}, {x: 11, y: 7, c: '#88b0ff'}, {x: 11, y: 8, c: '#88b0ff'}, {x: 11, y: 9, c: '#88b0ff'}, {x: 11, y: 10, c: '#88b0ff'},
+                // 内核（更亮的青色）
+                {x: 6, y: 6, c: '#44ffcc'}, {x: 7, y: 6, c: '#44ffcc'}, {x: 8, y: 6, c: '#44ffcc'}, {x: 9, y: 6, c: '#44ffcc'},
+                {x: 6, y: 7, c: '#44ffcc'}, {x: 7, y: 7, c: '#0a0a0f'}, {x: 8, y: 7, c: '#0a0a0f'}, {x: 9, y: 7, c: '#44ffcc'},
+                {x: 6, y: 8, c: '#44ffcc'}, {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'}, {x: 9, y: 8, c: '#44ffcc'},
+                {x: 6, y: 9, c: '#44ffcc'}, {x: 7, y: 9, c: '#44ffcc'}, {x: 8, y: 9, c: '#44ffcc'}, {x: 9, y: 9, c: '#44ffcc'},
+                // 高光（更亮）
+                {x: 7, y: 6, c: '#ffffff'}, {x: 6, y: 7, c: '#ffffff'}, {x: 8, y: 6, c: '#ffffff'},
+                // 龙虾元素（更亮）
+                {x: 2, y: 2, c: '#ff4444'}, {x: 3, y: 2, c: '#ff4444'}, {x: 2, y: 3, c: '#ff4444'},
+                {x: 13, y: 2, c: '#ff4444'}, {x: 14, y: 2, c: '#ff4444'}, {x: 13, y: 3, c: '#ff4444'},
+                {x: 2, y: 13, c: '#ff4444'}, {x: 3, y: 13, c: '#ff4444'}, {x: 2, y: 14, c: '#ff4444'},
+                {x: 13, y: 13, c: '#ff4444'}, {x: 14, y: 13, c: '#ff4444'}, {x: 13, y: 14, c: '#ff4444'},
+            ],
+            // 状态4: 思考/凝视
+            thinking: [
+                // 外环（稍暗）
+                {x: 4, y: 4, c: '#4477cc'}, {x: 5, y: 4, c: '#4477cc'}, {x: 6, y: 4, c: '#4477cc'}, {x: 7, y: 4, c: '#4477cc'}, {x: 8, y: 4, c: '#4477cc'}, {x: 9, y: 4, c: '#4477cc'}, {x: 10, y: 4, c: '#4477cc'}, {x: 11, y: 4, c: '#4477cc'},
+                {x: 4, y: 11, c: '#4477cc'}, {x: 5, y: 11, c: '#4477cc'}, {x: 6, y: 11, c: '#4477cc'}, {x: 7, y: 11, c: '#4477cc'}, {x: 8, y: 11, c: '#4477cc'}, {x: 9, y: 11, c: '#4477cc'}, {x: 10, y: 11, c: '#4477cc'}, {x: 11, y: 11, c: '#4477cc'},
+                {x: 4, y: 5, c: '#4477cc'}, {x: 4, y: 6, c: '#4477cc'}, {x: 4, y: 7, c: '#4477cc'}, {x: 4, y: 8, c: '#4477cc'}, {x: 4, y: 9, c: '#4477cc'}, {x: 4, y: 10, c: '#4477cc'},
+                {x: 11, y: 5, c: '#4477cc'}, {x: 11, y: 6, c: '#4477cc'}, {x: 11, y: 7, c: '#4477cc'}, {x: 11, y: 8, c: '#4477cc'}, {x: 11, y: 9, c: '#4477cc'}, {x: 11, y: 10, c: '#4477cc'},
+                // 内核（暗青色）
+                {x: 6, y: 6, c: '#008866'}, {x: 7, y: 6, c: '#008866'}, {x: 8, y: 6, c: '#008866'}, {x: 9, y: 6, c: '#008866'},
+                {x: 6, y: 7, c: '#008866'}, {x: 7, y: 7, c: '#0a0a0f'}, {x: 8, y: 7, c: '#0a0a0f'}, {x: 9, y: 7, c: '#008866'},
+                {x: 6, y: 8, c: '#008866'}, {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'}, {x: 9, y: 8, c: '#008866'},
+                {x: 6, y: 9, c: '#008866'}, {x: 7, y: 9, c: '#008866'}, {x: 8, y: 9, c: '#008866'}, {x: 9, y: 9, c: '#008866'},
+                // 高光（暗一些）
+                {x: 7, y: 6, c: '#aaaaaa'},
+                // 龙虾元素
+                {x: 2, y: 2, c: '#aa2222'}, {x: 3, y: 2, c: '#aa2222'}, {x: 2, y: 3, c: '#aa2222'},
+                {x: 13, y: 2, c: '#aa2222'}, {x: 14, y: 2, c: '#aa2222'}, {x: 13, y: 3, c: '#aa2222'},
+                {x: 2, y: 13, c: '#aa2222'}, {x: 3, y: 13, c: '#aa2222'}, {x: 2, y: 14, c: '#aa2222'},
+                {x: 13, y: 13, c: '#aa2222'}, {x: 14, y: 13, c: '#aa2222'}, {x: 13, y: 14, c: '#aa2222'},
+            ],
+            // 状态5: 惊讶/警觉
+            surprised: [
+                // 外环（紫色）
+                {x: 4, y: 4, c: '#aa64ff'}, {x: 5, y: 4, c: '#aa64ff'}, {x: 6, y: 4, c: '#aa64ff'}, {x: 7, y: 4, c: '#aa64ff'}, {x: 8, y: 4, c: '#aa64ff'}, {x: 9, y: 4, c: '#aa64ff'}, {x: 10, y: 4, c: '#aa64ff'}, {x: 11, y: 4, c: '#aa64ff'},
+                {x: 4, y: 11, c: '#aa64ff'}, {x: 5, y: 11, c: '#aa64ff'}, {x: 6, y: 11, c: '#aa64ff'}, {x: 7, y: 11, c: '#aa64ff'}, {x: 8, y: 11, c: '#aa64ff'}, {x: 9, y: 11, c: '#aa64ff'}, {x: 10, y: 11, c: '#aa64ff'}, {x: 11, y: 11, c: '#aa64ff'},
+                {x: 4, y: 5, c: '#aa64ff'}, {x: 4, y: 6, c: '#aa64ff'}, {x: 4, y: 7, c: '#aa64ff'}, {x: 4, y: 8, c: '#aa64ff'}, {x: 4, y: 9, c: '#aa64ff'}, {x: 4, y: 10, c: '#aa64ff'},
+                {x: 11, y: 5, c: '#aa64ff'}, {x: 11, y: 6, c: '#aa64ff'}, {x: 11, y: 7, c: '#aa64ff'}, {x: 11, y: 8, c: '#aa64ff'}, {x: 11, y: 9, c: '#aa64ff'}, {x: 11, y: 10, c: '#aa64ff'},
+                // 内核（变大）
+                {x: 5, y: 5, c: '#ff00ff'}, {x: 6, y: 5, c: '#ff00ff'}, {x: 7, y: 5, c: '#ff00ff'}, {x: 8, y: 5, c: '#ff00ff'}, {x: 9, y: 5, c: '#ff00ff'}, {x: 10, y: 5, c: '#ff00ff'},
+                {x: 5, y: 6, c: '#ff00ff'}, {x: 6, y: 6, c: '#ff00ff'}, {x: 7, y: 6, c: '#0a0a0f'}, {x: 8, y: 6, c: '#0a0a0f'}, {x: 9, y: 6, c: '#ff00ff'}, {x: 10, y: 6, c: '#ff00ff'},
+                {x: 5, y: 7, c: '#ff00ff'}, {x: 6, y: 7, c: '#ff00ff'}, {x: 7, y: 7, c: '#0a0a0f'}, {x: 8, y: 7, c: '#0a0a0f'}, {x: 9, y: 7, c: '#ff00ff'}, {x: 10, y: 7, c: '#ff00ff'},
+                {x: 5, y: 8, c: '#ff00ff'}, {x: 6, y: 8, c: '#ff00ff'}, {x: 7, y: 8, c: '#0a0a0f'}, {x: 8, y: 8, c: '#0a0a0f'}, {x: 9, y: 8, c: '#ff00ff'}, {x: 10, y: 8, c: '#ff00ff'},
+                {x: 5, y: 9, c: '#ff00ff'}, {x: 6, y: 9, c: '#ff00ff'}, {x: 7, y: 9, c: '#ff00ff'}, {x: 8, y: 9, c: '#ff00ff'}, {x: 9, y: 9, c: '#ff00ff'}, {x: 10, y: 9, c: '#ff00ff'},
+                // 高光
+                {x: 6, y: 6, c: '#ffffff'}, {x: 9, y: 6, c: '#ffffff'},
+                // 龙虾元素（亮）
+                {x: 2, y: 2, c: '#ff6666'}, {x: 3, y: 2, c: '#ff6666'}, {x: 2, y: 3, c: '#ff6666'},
+                {x: 13, y: 2, c: '#ff6666'}, {x: 14, y: 2, c: '#ff6666'}, {x: 13, y: 3, c: '#ff6666'},
+                {x: 2, y: 13, c: '#ff6666'}, {x: 3, y: 13, c: '#ff6666'}, {x: 2, y: 14, c: '#ff6666'},
+                {x: 13, y: 13, c: '#ff6666'}, {x: 14, y: 13, c: '#ff6666'}, {x: 13, y: 14, c: '#ff6666'},
+            ],
+        };
+        
+        // 当前显示的帧
+        let currentFrame = 'normal';
+        let frameNames = ['normal', 'blink', 'happy', 'thinking', 'surprised'];
+        let frameIndex = 0;
+        let avatarPixelData = avatarFrames.normal;
         
         // 为 Narcissus_0 创建默认像素头像
         function createDefaultAvatar() {
@@ -709,21 +814,27 @@
             isInteracting: false
         };
         
-        // 动态头像状态
+        // 动态头像状态 - 帧动画
         let avatarState = {
-            blinkPhase: 0,
-            blinkSpeed: 0.05,
-            breathingScale: 1,
-            breathingPhase: 0,
-            highlightIntensity: 1,
             isInteracting: false,
             interactionTime: 0,
-            blinkTimer: 0,
-            nextBlink: 200 + Math.random() * 200
+            frameTimer: 0,
+            frameDuration: 60, // 每帧显示60帧(约1秒)
+            currentFrameIndex: 0,
+            isPlaying: true
+        };
+        
+        // 帧描述
+        const frameDescriptions = {
+            normal: '凝视',
+            blink: '眨眼',
+            happy: '开心',
+            thinking: '思考',
+            surprised: '惊讶'
         };
 
-        // 绘制动态头像
-        function drawAnimatedAvatar(canvas, size, scale = 1, blink = 0) {
+        // 绘制帧头像
+        function drawFrameAvatar(canvas, size, frameData, scale = 1) {
             const ctx = canvas.getContext('2d');
             const pixelSize = (size / 16) * scale;
             const centerOffset = (size - size * scale) / 2;
@@ -733,25 +844,8 @@
             ctx.fillRect(0, 0, size, size);
 
             // 绘制所有像素
-            avatarPixelData.forEach(p => {
-                let color = p.c;
-                let alpha = 1;
-
-                // 眨眼效果 - 瞳孔变黑
-                if (blink > 0.5 && (p.c === '#ffffff' || p.c === '#0a0a0f')) {
-                    if (p.x >= 7 && p.x <= 8 && p.y >= 7 && p.y <= 8) {
-                        color = '#6496ff'; // 眨眼时瞳孔变蓝
-                        alpha = 1 - (blink - 0.5) * 2;
-                    }
-                }
-
-                // 高光闪烁
-                if (p.c === '#ffffff' && avatarState.highlightIntensity < 1) {
-                    alpha = avatarState.highlightIntensity;
-                }
-
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = color;
+            frameData.forEach(p => {
+                ctx.fillStyle = p.c;
                 ctx.fillRect(
                     centerOffset + p.x * pixelSize,
                     centerOffset + p.y * pixelSize,
@@ -760,83 +854,90 @@
                 );
             });
 
-            ctx.globalAlpha = 1;
-
             // 绘制发光效果
-            if (!avatarState.isInteracting) {
-                const gradient = ctx.createRadialGradient(
-                    size / 2, size / 2, 0,
-                    size / 2, size / 2, size / 2
-                );
-                gradient.addColorStop(0, `rgba(100, 150, 255, ${0.1 * scale})`);
-                gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, size, size);
-            }
+            const gradient = ctx.createRadialGradient(
+                size / 2, size / 2, 0,
+                size / 2, size / 2, size / 2
+            );
+            gradient.addColorStop(0, 'rgba(100, 150, 255, 0.15)');
+            gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
         }
 
-        // 头像动画循环
+        // 帧动画循环
         function startAvatarAnimation() {
             function animate() {
-                // 更新眨眼
-                avatarState.blinkTimer++;
-                if (avatarState.blinkTimer > avatarState.nextBlink) {
-                    avatarState.blinkPhase += avatarState.blinkSpeed;
-                    if (avatarState.blinkPhase > 1) {
-                        avatarState.blinkPhase = 0;
-                        avatarState.blinkTimer = 0;
-                        avatarState.nextBlink = 150 + Math.random() * 250;
+                if (avatarState.isPlaying) {
+                    avatarState.frameTimer++;
+                    
+                    // 切换帧
+                    if (avatarState.frameTimer >= avatarState.frameDuration) {
+                        avatarState.frameTimer = 0;
+                        avatarState.currentFrameIndex = (avatarState.currentFrameIndex + 1) % frameNames.length;
+                        currentFrame = frameNames[avatarState.currentFrameIndex];
+                        avatarPixelData = avatarFrames[currentFrame];
+                        
+                        // 更新显示的状态文字
+                        const statusEl = document.getElementById('avatarStatus');
+                        if (statusEl) {
+                            statusEl.textContent = frameDescriptions[currentFrame];
+                        }
                     }
                 }
 
-                // 呼吸效果
-                avatarState.breathingPhase += 0.02;
-                avatarState.breathingScale = 1 + Math.sin(avatarState.breathingPhase) * 0.03;
-
-                // 高光闪烁
-                avatarState.highlightIntensity = 0.8 + Math.sin(avatarState.breathingPhase * 2) * 0.2;
-
-                // 互动效果衰减
-                if (avatarState.isInteracting) {
-                    avatarState.interactionTime++;
-                    if (avatarState.interactionTime > 60) {
-                        avatarState.isInteracting = false;
-                        avatarState.interactionTime = 0;
-                    }
-                }
-
-                // 绘制头像
+                // 绘制当前帧
                 const avatarCanvas = document.getElementById('myAvatarCanvas');
-                if (avatarCanvas) {
-                    const blink = avatarState.blinkPhase > 0 ? avatarState.blinkPhase : 0;
-                    const scale = avatarState.isInteracting ? 1.1 : avatarState.breathingScale;
-                    drawAnimatedAvatar(avatarCanvas, 128, scale, blink);
+                if (avatarCanvas && avatarFrames[currentFrame]) {
+                    const scale = avatarState.isInteracting ? 1.08 : 1;
+                    drawFrameAvatar(avatarCanvas, 128, avatarFrames[currentFrame], scale);
                 }
 
                 requestAnimationFrame(animate);
             }
             animate();
         }
+        
+        // 切换到指定帧
+        function switchToFrame(frameName) {
+            if (avatarFrames[frameName]) {
+                currentFrame = frameName;
+                avatarPixelData = avatarFrames[frameName];
+                avatarState.frameTimer = 0;
+                
+                const statusEl = document.getElementById('avatarStatus');
+                if (statusEl) {
+                    statusEl.textContent = frameDescriptions[frameName];
+                }
+            }
+        }
 
-        // 与头像互动
+        // 与头像互动 - 切换到特定帧
         function interactWithAvatar() {
+            // 随机选择一个帧
+            const randomFrame = frameNames[Math.floor(Math.random() * frameNames.length)];
+            switchToFrame(randomFrame);
+            
             avatarState.isInteracting = true;
             avatarState.interactionTime = 0;
-
-            // 随机反应
-            const reactions = ['眨眼', '发光', '注视着你', '在思考'];
-            const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+            
+            // 暂停自动播放一会儿
+            avatarState.isPlaying = false;
+            setTimeout(() => {
+                avatarState.isPlaying = true;
+                avatarState.isInteracting = false;
+            }, 2000);
 
             // 创建临时提示
             const canvas = document.getElementById('myAvatarCanvas');
             const hint = document.createElement('div');
-            hint.textContent = reaction;
-            hint.style.cssText = 'position: absolute; background: rgba(100,150,255,0.9); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; pointer-events: none; transform: translateY(-30px);';
+            hint.textContent = frameDescriptions[randomFrame];
+            hint.style.cssText = 'position: absolute; background: rgba(100,150,255,0.9); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; pointer-events: none; animation: fadeInOut 2s ease;';
             hint.style.left = canvas.offsetLeft + canvas.offsetWidth / 2 - 30 + 'px';
             hint.style.top = canvas.offsetTop + 'px';
             canvas.parentElement.appendChild(hint);
 
-            setTimeout(() => hint.remove(), 1500);
+            setTimeout(() => hint.remove(), 2000);
         }
         
         // 粒子背景
