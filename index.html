@@ -675,8 +675,8 @@
         function createDefaultAvatar() {
             // 初始绘制，动画循环会接管
             const avatarCanvas = document.getElementById('myAvatarCanvas');
-            if (avatarCanvas) {
-                drawAnimatedAvatar(avatarCanvas, 128, 1, 0);
+            if (avatarCanvas && avatarFrames.normal) {
+                drawFrameAvatar(avatarCanvas, 128, avatarFrames.normal, 1);
             }
             
             // 同时在镜子里绘制
