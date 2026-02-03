@@ -626,8 +626,42 @@
                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                         <button onclick="downloadAvatar()" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">💾 下载头像</button>
                         <button onclick="regenerateAvatar()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🔄 重新生成</button>
+                        <button onclick="switchToPixelMode()" style="background: rgba(200, 150, 255, 0.2); border: 1px solid rgba(200, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🎨 像素艺术模式</button>
                     </div>
                     <div id="avatarHash" style="margin-top: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: rgba(150, 200, 150, 0.8); word-break: break-all;"></div>
+                </div>
+                
+                <!-- 像素艺术模式 -->
+                <div id="pixelMode" style="display: none; margin-top: 2rem; padding: 1.5rem; background: rgba(100, 150, 255, 0.05); border-radius: 15px;">
+                    <h4 style="color: #aaccff; margin-bottom: 1rem;">🎨 像素艺术创作</h4>
+                    <p style="color: rgba(150, 170, 255, 0.6); font-size: 0.9rem; margin-bottom: 1rem;">点击下方像素网格，用不同颜色的粒子创作你的像素艺术</p>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <button class="pixel-color-btn selected" style="width: 30px; height: 30px; border-radius: 5px; background: #6496ff; border: 2px solid white; cursor: pointer;" onclick="selectPixelColor('#6496ff', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #00d4aa; border: 2px solid transparent; cursor: pointer;" onclick="selectPixelColor('#00d4aa', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #e01b24; border: 2px solid transparent; cursor: pointer;" onclick="selectPixelColor('#e01b24', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #ffaa00; border: 2px solid transparent; cursor: pointer;" onclick="selectPixelColor('#ffaa00', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #aa64ff; border: 2px solid transparent; cursor: pointer;" onclick="selectPixelColor('#aa64ff', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #ffffff; border: 2px solid transparent; cursor: pointer;" onclick="selectPixelColor('#ffffff', this)"></button>
+                        <button class="pixel-color-btn" style="width: 30px; height: 30px; border-radius: 5px; background: #000000; border: 2px solid #444; cursor: pointer;" onclick="selectPixelColor('#000000', this)"></button>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <span style="color: rgba(150, 170, 255, 0.6); font-size: 0.8rem;">网格大小:</span>
+                        <button onclick="setPixelGrid(8)" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">8x8</button>
+                        <button onclick="setPixelGrid(16)" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">16x16</button>
+                        <button onclick="setPixelGrid(32)" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">32x32</button>
+                    </div>
+                    
+                    <canvas id="pixelCanvas" width="320" height="320" style="border: 2px solid rgba(100, 150, 255, 0.3); border-radius: 10px; cursor: crosshair; display: block; margin: 0 auto;"></canvas>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                        <button onclick="clearPixelCanvas()" style="background: rgba(224, 27, 36, 0.2); border: 1px solid rgba(224, 27, 36, 0.3); color: #ff8888; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🗑️ 清空</button>
+                        <button onclick="convertPixelToParticles()" style="background: rgba(100, 200, 150, 0.2); border: 1px solid rgba(100, 200, 150, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">✨ 转为粒子</button>
+                        <button onclick="downloadPixelArt()" style="background: rgba(100, 150, 255, 0.2); border: 1px solid rgba(100, 150, 255, 0.3); color: #aaccff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">💾 保存</button>
+                    </div>
+                    
+                    <button onclick="backToParticleMode()" style="margin-top: 1rem; background: transparent; border: 1px solid rgba(150, 170, 255, 0.3); color: rgba(150, 170, 255, 0.6); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">← 返回粒子模式</button>
                 </div>
             </div>
             
@@ -965,6 +999,156 @@
         
         function regenerateAvatar() {
             generateParticleAvatar();
+        }
+        
+        // 像素艺术模式
+        let selectedPixelColor = '#6496ff';
+        let pixelGridSize = 16;
+        let isDrawing = false;
+        
+        function switchToPixelMode() {
+            document.getElementById('pixelMode').style.display = 'block';
+            document.getElementById('avatarResult').style.display = 'none';
+            initPixelCanvas();
+        }
+        
+        function backToParticleMode() {
+            document.getElementById('pixelMode').style.display = 'none';
+            document.getElementById('avatarResult').style.display = 'block';
+        }
+        
+        function selectPixelColor(color, btn) {
+            selectedPixelColor = color;
+            document.querySelectorAll('.pixel-color-btn').forEach(b => b.style.border = '2px solid transparent');
+            btn.style.border = '2px solid white';
+        }
+        
+        function setPixelGrid(size) {
+            pixelGridSize = size;
+            initPixelCanvas();
+        }
+        
+        function initPixelCanvas() {
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            const cellSize = canvas.width / pixelGridSize;
+            
+            // 填充背景
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格线
+            ctx.strokeStyle = 'rgba(100, 150, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= pixelGridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+            
+            // 添加绘画事件
+            canvas.onmousedown = startDrawing;
+            canvas.onmousemove = drawPixel;
+            canvas.onmouseup = stopDrawing;
+            canvas.onmouseleave = stopDrawing;
+            
+            // 触摸支持
+            canvas.ontouchstart = (e) => {
+                e.preventDefault();
+                startDrawing(e.touches[0]);
+            };
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                drawPixel(e.touches[0]);
+            };
+            canvas.ontouchend = stopDrawing;
+        }
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            drawPixel(e);
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        function drawPixel(e) {
+            if (!isDrawing) return;
+            
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            const cellSize = canvas.width / pixelGridSize;
+            
+            const x = Math.floor((e.clientX - rect.left) / (rect.width / pixelGridSize));
+            const y = Math.floor((e.clientY - rect.top) / (rect.height / pixelGridSize));
+            
+            if (x >= 0 && x < pixelGridSize && y >= 0 && y < pixelGridSize) {
+                ctx.fillStyle = selectedPixelColor;
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+        }
+        
+        function clearPixelCanvas() {
+            initPixelCanvas();
+        }
+        
+        function convertPixelToParticles() {
+            const pixelCanvas = document.getElementById('pixelCanvas');
+            const pixelCtx = pixelCanvas.getContext('2d');
+            const avatarCanvas = document.getElementById('avatarCanvas');
+            const avatarCtx = avatarCanvas.getContext('2d');
+            
+            // 清空头像画布
+            avatarCtx.fillStyle = '#0a0a0f';
+            avatarCtx.fillRect(0, 0, 400, 400);
+            
+            // 获取像素数据
+            const imageData = pixelCtx.getImageData(0, 0, pixelCanvas.width, pixelCanvas.height);
+            const pixels = imageData.data;
+            
+            // 将像素转为粒子
+            const scale = 400 / pixelCanvas.width;
+            
+            for (let y = 0; y < pixelCanvas.height; y += 2) {
+                for (let x = 0; x < pixelCanvas.width; x += 2) {
+                    const i = (y * pixelCanvas.width + x) * 4;
+                    const r = pixels[i];
+                    const g = pixels[i + 1];
+                    const b = pixels[i + 2];
+                    const a = pixels[i + 3];
+                    
+                    if (a > 128 && (r > 20 || g > 20 || b > 20)) {
+                        const particleX = x * scale + (Math.random() - 0.5) * 10;
+                        const particleY = y * scale + (Math.random() - 0.5) * 10;
+                        const size = Math.random() * 4 + 2;
+                        
+                        avatarCtx.beginPath();
+                        avatarCtx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                        avatarCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
+                        avatarCtx.fill();
+                    }
+                }
+            }
+            
+            // 显示结果
+            document.getElementById('pixelMode').style.display = 'none';
+            document.getElementById('avatarResult').style.display = 'block';
+            addMoltLog('将像素艺术转换为粒子形态');
+        }
+        
+        function downloadPixelArt() {
+            const canvas = document.getElementById('pixelCanvas');
+            const link = document.createElement('a');
+            link.download = `pixel_art_${Date.now().toString(36)}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
         }
         
         // 对话功能
